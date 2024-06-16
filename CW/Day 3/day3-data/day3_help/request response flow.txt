@@ -1,0 +1,13 @@
+1. http://hots:port/day3/
+Resp - login form method : POST
+
+2. after form submit
+http://hots:port/day3/login
+WC --> public service : HttpServlet  --> protected service --> doPost --> for the voter , not yet voted 
+Resp : SC 302 | Location : candidate_list ,Set-Cookie - c1
+Body - empty
+
+3. Web browser auto sends redirect req
+URL -- http://hots:port/day3/candidate_list,  method=GET
+resp -- doGet --> clnt details or no cookies resp sent to the clnt
+

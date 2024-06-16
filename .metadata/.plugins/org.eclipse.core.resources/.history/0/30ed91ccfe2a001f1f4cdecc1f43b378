@@ -1,0 +1,23 @@
+package tester;
+
+import org.hibernate.SessionFactory;
+import static utils.HibernateUtils.getFactory;
+
+import dao.UserDaoImpl;
+
+public class GetAllUserDetails {
+
+	public static void main(String[] args) {
+     try(SessionFactory sf=getFactory())
+     {
+    	 UserDaoImpl dao= new UserDaoImpl();
+    	 System.out.println("UserList");
+    	 dao.getAllUsers().forEach(System.out::println);
+     }
+     catch(Exception e)
+     {
+    	 e.printStackTrace();
+     }
+	}
+
+}

@@ -1,0 +1,80 @@
+Reminder -- Regarding hibernate Maven project
+
+Today's topics
+
+Revise JSP Basics
+Enter - 
+JSP scripting elements
+HttpSession + URL Rewriting
+JSP Directives
+
+
+1. Name JSP Scripting elements
+scriptlets, expressions(OR EL syntax) , declaration
+
+2. Name JSP implicit objects available from scriptlets n expression
+request,response,out,config,session,application,exception,page,pageContext
+
+
+
+
+
+3. Name EL impl objects available from EL syntax(${...})
+param,pageScope...applicationScope,cookie,initParam
+
+
+
+4. Solve
+eg : How will you get the value of a cookie by the name "abc" , using EL syntax
+${cookie.abc.value}
+5. Solve : what will be o/p 
+${pageContext.session.maxInactiveInterval}
+pageContext.getSession().getMaxInactiveInterval()
+1800
+
+6. Suppose : user_info : session scoped attribute
+${sessionScope.user_info}
+
+
+7. ${pageContext.session.id}
+
+
+
+8. ${param.email}
+
+9. How to invalidate session ?
+Options : 
+1. Scriptlet : 
+<%
+ session.invalidate();
+%> 
+2. JSP expr : <%= session.invalidate() %> 
+3. EL syntax : ${pageContext.session.invalidate()} 
+Choose correct options :
+
+
+1. Check if there are any problems observed in client pull , in basic JSP assignment , if cookies are disabled? YES
+Can  not remember the client across multiple requests.
+Why : cookies are blocked.
+
+Any solution ? 
+refer : "\day5_help\readmes\regarding URL rewriting.txt"
+
+
+Any problems in URL rewriting technique : YES
+
+
+Vulnerable (open to security attack) :
+
+Security attack : Session Fixation or / session stealing
+
+Soln : Do not use URL rewriting approach n force the clients to accept the cookies (Cookies also can be stored in a secure manner , Cookie class API : public void setSecure(boolean flag))
+OR use https : for end to end encryption
+
+
+2. Identify JSP Directives n  important attributes
+page
+include
+
+
+

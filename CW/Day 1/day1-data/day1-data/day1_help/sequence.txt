@@ -1,0 +1,50 @@
+Revise
+JDBC steps n layers
+
+New topics
+
+1. Executing stored procedure / function with JDBC
+Steps 
+1. Create a stored proc /function in DB
+2. Create a CallableStatement for execution of stored proc/func.
+API of java.sql.Connection i/f
+public CallableStatement prepareCall(String sql) throws SQLException
+ sql syntax for proc - "{call procName(?,?,?....)}"
+sql syntax for function - "{?=call functionName(?,?,?....)}"
+3. To inform the JVM about data type(generic SQL type) of OUT parameters
+Method of CallableStatement
+public void registerOutParameter(int paramIndex,int jdbcType) throws SQLException
+1st arg - param position
+2nd arg - use java.sql.Types class constants.
+4. Set IN parameter/s
+Method inherited from PreparedStatement
+public void setType(int paramIndex, Type value)  throws SQLException
+5. Execute stored proc / function
+public boolean execute()  throws SQLException
+Ret type is ignored here.
+6. To get the results from OUT parameter
+CallableStatement API
+public Type getType(int paramIndex) throws SQLException
+Type - JDBC data type (Generic SQL type)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2. Reflection Overview
+
+Enter Java EE
+
+Refer - "day1_help\JavaEE_help\diags\Full Stack Overview.png"
+Follow Java EE sequence.
+
+

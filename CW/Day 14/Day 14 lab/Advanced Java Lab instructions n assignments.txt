@@ -1,0 +1,388 @@
+Day 1
+1. Refer - "day1-data\help\day1_help\JavaEE_help\Steps.txt"
+Access Apache tomcat - from g drive - "Web Server n Java EE docs\apache-tomcat-9.0.76.zip" 
+
+Confirm first 
+JDK version : JDK 11
+IDE : Eclipse STS 3.9.18
+1. Create new workspace
+2. Change perspective to Java EE 
+3. Delete earlier web server.
+4. Add Apache tomcat (9.0.76) in IDE.
+5. Create dynamic web project n test welcome page(HTML contents)
+6. Extract Java EE docs from : "day1_help\JavaEE_help\Web Server n Java EE docs\javaee-api-8.0-javadoc.jar"
+7. In index.html , add a link to test the servlet , deployed using annotations
+(Servlet1)
+Confirm complete servlet life cycle (init , service , destroy)
+(by printing messages on the server console)
+
+8. Revise JDBC , using JDBC demo.
+9. If possible start building the DAO , Entities n DBUtils for online voting case study, with the help of lab faculty.
+refer -"case studies\voting assignment.png"
+You can test this DAO layer using Tester (main based app)
+We will integerate it with Servlets tomorrow.
+
+
+8. In index.html , add another link to test the servlet , deployed using xml tags
+Copy Servlet1 into Servlet2 (make some changes in the print statements)
+Confirm complete servlet life cycle again
+
+9. Let's start solving online voting case study
+
+9.1 Voter authentication
+i/p : email , password
+
+Day 2
+
+1. import day2.1 , in the Java EE workspace
+Correct Build path errors if any !
+Edit DBUtils , as per your DB settings.
+
+1.1 Revise the flow of Online voting , completed so far.
+(from login.html till Candidate List page)
+Use inspect option (client side debugging) for BEST clarity.
+
+1.2 Revise cookie based state management(session tracking) n test it.
+
+1.3 Solve  - Voter registration (sign up)
+
+Add a Link for  Sign Up , in login.html
+Submit it to voter_register.html(Already supplied in today's help.)
+ Accept first name , last name , email , password , dob from user.
+Submit the form to VoterRegistrationServlet
+Validate user's age . In case of valid age(>21)  , use dao layer to insert a record in DB.
+Already supplied  in UserDaoImpl.
+
+In case of successful insertion , give a messgae n Add a link : Login Again ---> login.html
+
+In case of failure  ,display failure message ,  Add a link : Back  ---> voter_registration.html
+
+2. Complete JDBC assignment of DAO layer for
+
+2.1  Get all candidates. 
+2.2  Update Voting status
+2.3  Increment candidate votes
+
+
+Day 3
+
+1. import eclipse project day3.1 in your workdpace
+Edit DB settings from DBUtils class
+
+1.1 Trace entire flow from login -logout , for voter
+
+2. import eclipse project day3.2 in your workdpace
+Edit DB settings from web.xml.
+Use this web project , to revise 
+ServletConfig n reading init parameters.
+Pls look at modified 
+2.1 DBUtils (openConnection , getConnection,closeConnnection)  
+2.2 DAO classes
+
+Hands on
+3. MUST complete voter registration part today.
+If required , refer - "day3-data\day3_help\voter registration help"
+
+4. New OPTIONAL assignment (after you complete the voter registration)
+
+Complete admin flow 
+Refer to the flow diagram 
+"case studies\voting assignment.png"
+
+1. import day3.2 (it's a copy of day3.1)
+ It uses ServletConfig n init params
+What will you edit here ????
+Any Java code OR web.xml ?
+Revise
+1.1 HttpSession API
+1.2 Dynamic form generation
+1.3 ServletConfig
+
+2. complete 
+2.1  Complete Voter registration
+2.2  Complete admin flow (If time permits) or do it in the individual labs.
+
+Day 4
+No new assignments !
+1. BUT you have to revise servlets including 
+Servlet life cycle , including management of  concurrency(exec frmwork)
+State management
+Page Navigation 
+Case study
+
+2. import day4.1 , to revise 
+Request dispatching with forward
+(Differentiate between sendRedirect n forward)
+
+3. import day4.2 , to revise 
+Request dispatching with include
+(mainly to differentiate between forward vs include)
+
+4. import day4.3 (copied from day3' s case study) , to revise 
+web app listeners.
+
+5. import day4.4 , to look at 
+JSP comments 
+Revise 
+JSP life cycle from the shared diagram 
+JSP syntax (covered so far)
+
+5. I will share optional assignment later , on the group 
+(little more challenging !)
+
+Day 5
+1. import day5.1 , to revise
+1.1 JSP scripting elements
+1.2 EL syntax
+1.3 URL rewriting
+1.4 JSP directives
+
+2. Hands on
+Solve JSP basic assignment
+refer - "day5-data\JSP basic assignment.png"
+We have already solved it using client pull (clicking on links n redirect)
+
+You modify it - to replace client pull by server pull
+(i.e replace redirect by forward n then make the necessary changes)
+O/P should be the same !
+
+3. MANDATORY work , for hibernate (with lab faculty's help)
+3.1 Download n extract template_projects , from g drive
+3.2 Copy test_hibernate_basic , in the workspace.
+3.3 import it as existing Maven app n then force update it.
+(Steps already shown n discussed in theory session)
+Every one MUST download hibernate dependencies , as Maven dependencies , today itself !
+
+
+Day 6
+1. Have you downlaoded the maven dependencies for hibernate , as per above instructions ?
+2. Continue with test_hibernate_basic project .(It's NOT a web project , it's a maven based standalone application)
+
+2.1 Edit from src/main/resources - hibernate.cfg.xml , to edit DB settings
+(mainly password)
+2.2 Create HibernateUtils class , to build a SessionFactory 
+2.3 Write a Tester to test if hibernate is up n running.
+
+3. import day6.1 (it's the usual dynamic web project -using JDBC)
+3.1 Edit web.xml , to edit DB settings
+3.2 Refer 
+1. web.xml - to check , loading on start up of DBConnectionManager servlet
+2. com.app.pages.DBConnectionManager
+3. index.jsp 
+Trace - the links
+Test jsp forward| include action (revise JSP standard actions , RequestDispatcher)
+Refer to today's sequence.txt
+
+2. Trace - User Login
+Flow -> login.jsp --> validate.jsp(uses Java beans -  User bean n candidate bean)
+--> admin_page.jsp --> logout.jsp
+Revise JSP-JavaBean-DAO-POJO-DB layers
+
+4. Hands on (Mandatory)
+Try voter registration (as you had done earlier in servlets) BUT using JSP n JavaBean
+OR
+Try to complete voter flow , using using JSP n JavaBean
+
+Revise JSTL tags.
+
+
+Day 7
+
+1. day7.1 in the Maven Project
+Copy  day7.1 in your workspace.
+Import it as , existing Maven project n force update it.
+Edit DB setting from hibernate.cfg.xml file
+
+To revise , complete 
+Refer to all the testers , from com.app.tester n trace CRU opeartions
+ 
+(Refer - today's hibernate sequence n session API readme n hibernate_help.txt)
+
+2. Solve (MANDATORY , for clear understanding of tomorrow)
+2.1 Refer - "case studies\blogs E-R.png"
+2.2 Create new category
+with - id(PK) ,name(unique,varchar 50) , description(varchar=200)
+2.3 Create Category dao for the following
+1. Create new category
+2. Display all categories
+3. Display a specific category details by it's name
+
+
+Day 8
+1. Copy  day8.1 in your workspace.
+Import it as , existing Maven project n force update it.
+Edit DB setting from hibernate.cfg.xml file
+Revise
+1.1 Delete API
+1.2 Image (BLOB) handling
+
+2. Copy  day8.2 in your workspace.(IMPORTANT project for E-R)
+Import it as , existing Maven project n force update it.
+Edit DB setting from hibernate.cfg.xml file
+2.1 revise inheritance (@MappedSuperClass)
+2.2 uni n bi associations between the entities
+2.3 Mainly revise JPA annotations n their properties.
+
+3. If you want (COMPLETELY OPTIONAL) 
+You can try to establish 
+Comment *--->1 User(commenter)
+Comment *--->1 BlogPost
+(Refer to "case studies\blogs E-R.png" - for more clarity)
+
+
+
+Day 9
+1. In the hybrid session , we will do the following
+1.1 Understand why spring - with examples
+(tight coupling vs loose coupling) 
+
+1.2 Spring bean life cycle (managed by Spring Container using XML based instructions)
+
+1.3 Different techniques(modes) of D.I (dependency injection)
+
+
+2. In the individual labs
+Revise 
+All E-Rs
+LazyInitException
+Go through the sample codes.
+
+3. For better grip , try
+Health care assignment (as discussed)
+Entities involved - Doctor , Patient , Appointment
+Use suitable associations between the entities.
+
+Tables created - doctors , patients , appointments
+
+Insert some records (can add directly in DB -insert query) in doctors n patients table.
+
+Create a tester , n dao layer 
+to book appointment
+i/p - appointment date , time , doc id , patient id
+Check if it works !
+
+
+Day 10
+
+1. In the hybrid session ,
+1.1 Copy n import day10.6 spring project  , to revise annotations based approach
+
+1.2 Understand n implement Spring MVC flow
+Solve basic objectives.
+
+
+2. In the individual labs ,
+Revise , using day10.1 -day10.6 projects 
+2.1 Spring bean life cycle , with setter n ctor based D.I
+2.2 Factory based D.I
+2.3 autowire=byName
+2.4 autowire=byType
+2.5 autowire=constructor
+2.6 hybrid approach (lesser xml n majority annotations)
+
+Day 11
+IMPORTANT Instruction (before coming to hybrid session)
+Copy "Template Projects\spring_boot_template_mvc" project in your workspace n import it as existing Maven project . Force update it.
+(It will download spring boot n related dependencies)
+Do this step in the lunch break n then join the combined lab.
+Versions used (as per PG-DAC contents)
+JDK 11
+Spring Boot 2.x
+
+1. In the hybrid session
+1.1 Create Spring Boot based application , for login-logout flow , in Blogs Management
+
+1.2 Refer to today's sequence , for details
+
+
+2. Mandatory assignment in the individual labs.
+At least start with it (Has to be doen with Spring Boot)
+
+2.1 Copy "Template Projects\spring_boot_template_mvc" project in your workspace n import it as existing Maven project . Force update it.
+Refactor the project name to -  product_management
+
+Solve these objectives (completely from scratch!)
+Add the links in index.jsp (BTW index.jsp , has to be rendered from the Spring container)
+
+1. Display all products
+2. Accept the category n display all the products from the given category
+3. Accept product id n discount 
+Apply discount n display updated product details again.
+
+Layers - ProductController -ProductService-Product DAO -Product entity - DB
+
+products table - id , category (BAKERY|SHOES|CLOTHES|STATIONAY) ,product name  , price , available quantity
+After auto table creation ,insert some records in the products , start with the testing.
+
+
+Day 12
+
+1. Copy n import "Template Projects\spring_boot_backend_template"
+Force update the maven project
+Edit application.properties (DB password)
+
+For advanced Java Lab exam , you will be getting this template project. You will have to develop the RestController, Service n DAO layer n Entities on your own , as per the requirements.
+
+Mandatory Lab work
+Add REST API end point for -
+1.1 Get all products
+1.2 Add new product
+
+MUST use following tech stack - 
+Spring Boot , Spring Data JPA , lombok annotations.
+(Take help of lab faculties , to install lombok library , as already shown !)
+
+
+2. After completing this , import "day12-data\code\day12_REST"
+It's a backend for blogs management.
+Revise GET n POST
+
+3. After completing this , import "day12-data\code\day12_spring_boot_mvc"
+It's a monolithic web app , with JSP based view layer.
+Revise the flow.
+Solve this.
+After blogger logs in , display all blog post details on his/her home page 
+(solution already discussed ! 
+Hint - use DTO )
+The view should contain - (blog post last updated , title ,desc , author name , category name)
+MUST be done using Spring Data JPA
+
+Day 13
+1. import day13_REST n revise CRUD operations along with advanced features
+
+2. import day13_REST2 n revise  advanced features , DTO pattern , E-R .
+
+3 Solve -
+
+Complete CRUD operations on the product resource.
+
+Day 14
+Solve Health care appointment using REST APIs 
+(backend only)
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

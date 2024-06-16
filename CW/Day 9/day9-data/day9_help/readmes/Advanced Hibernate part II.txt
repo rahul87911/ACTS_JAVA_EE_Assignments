@@ -1,0 +1,166 @@
+Core Java Topic
+Method reference 
+Refer - "day9-data\day9_help\regarding method reference.txt"
+
+Revise 
+@MappedSuperclass
+@OneToMany (mappedBy,cascade,orphanRemoval)
+@ManyToOne 
+@JoinColumn
+
+What is orphanRemoval ?
+A boolean property of @OneToMany / @OneToOne annotation.
+default value - false
+
+It states - 
+Whether to apply the remove operation to entities that have been removed from the relationship and to cascade the remove operation to those entities.
+We had already added - cascade=CascadeType.ALL (which includes - REMOVE)
+BUT still it wasn't working.
+
+So after enabling the orphanRemoval=true , after removing the post from the category 
+(using removeBlogPost) , we are telling hibernate to remove the orphan post record . 
+
+1. Revise through code
+Fields in the Comment - commentText , rating
+Establish uni dir associations (for more practice)
+Comment *--->1 User(commenter)
+Comment *--->1 BlogPost
+
+
+2. Ask yourself
+Should a blogger be allowed to comment on his/her own blog post ?
+How will you manage it - using validation logic , while adding a new comment
+
+2.5 
+Should the SAME commenter be allowed to comment on the SAME POST again n again ?
+NO 
+HOW - using uniqueConstraints in @Table 
+
+
+3. 
+Solve 
+Post a new comment
+i/p - comment text  , rating , commenter id , post id
+o/p status message
+steps 
+get commenter from id
+get post from id 
+establish uni dir asso comment -> user 
+setter
+establish uni dir asso comment -> post
+setter
+session.persist(comment);
+
+
+
+
+4. Display all comments for specified post
+i/p - post title
+o/p - list of comments displayed
+Hint
+select c from Comment c where c.post.title=:title
+
+
+5. Get category details by it's name
+i/p category name
+
+5.1 Display category details
+
+5.2 Display post details belonging to that category.
+Observation ?????
+
+6. Problem root cause n solution for LazyInitializationException
+Refer - "day9-data\day9_help\regarding lazyinit exception.txt"
+
+7. Observe the select queries .
+Why so many n any way to reduce ?
+i.e Along with Category , Post ,hibernate was lifting blogger(user) details also
+Reason -Def fetch type for @ManyToOne -EAGER
+So if your application doesn't need it all the time , can it be changed to LAZY ?
+
+8.  Lab work (Very interesting ! It will help you to appreciate hibernate all over again !)
+Get complete object graph , in 1 single query
+i/p -- category name
+o/p - category details , it's all post details n then their  author details
+Refer to the tester - GetCompleteGraph n solve it(Written partially , but will NOT work as it is)
+
+
+9. Establish one-one uni directional association between User n Address
+User 1-->1 Address
+How will you configure ?
+Will you need cascading ? yes
+FK column name - address_id
+
+9.1 Assign user address
+i/p -- adress details + user id
+
+Observe the queries - 
+You will see update in user n insert in address - perfect !
+BUT additional left outer join select query with user n address.
+Why ?
+Any Soln ?
+
+9.2 Lab work
+Get user details along with it's address
+i/p - user email
+o/p -- user +adress detail
+
+
+9.3 List all users complete names from a specified city
+i/p city name
+o/p -- list of users(names)
+Hint - JPQL - select new com.app.entities.User(firstName,lastName)  from User u where u.myAdress.city=:city
+
+
+
+
+
+10 Add many-many association between 
+Tags *--->* Posts
+No need of additional entity here 
+Since there is no requirement of additional cols in the link table
+Only cols required in tag_posts table - tag_id , post_id
+
+
+
+
+11. Till Now , we were looking at association(HAS-A) relationship between multiple entities.
+Entities have a standalone existence(typically a separate table) , it's own PK.
+It's life cycle(transient, persistent,detached,removed) is independent of any other entity
+
+So this represents : weak association (aggregation)
+
+Can there be a strong association between hibernate managed POJOs ? YES
+
+12. Enter value types
+Refer - "day9_help\readmes\Entity Vs Value Types.txt"
+Refer - "day9_help\diagrams\JPA-Hibernate-POJO-Types.png"
+
+User HAS-A Adhar Card : demo of entity n value type (composite)
+
+User HAS-A PaymentCard (can have multiple credit/debit cards) : Collection of embeddable
+
+User HAS-A Language Skills : string (multiple languages)
+: collection of basic value type
+
+
+Adhar Card : embeddable : @Embeddable
+field : cardNo , date , loc
+
+Lab work 
+Link adhaar card n languages to the user(blogger)
+i/p card details , languages n  user id
+o/p mesg
+
+13. Port JDBC DAO based web app to hibernate
+Online voting - admin part
+
+
+
+
+
+
+
+
+
+

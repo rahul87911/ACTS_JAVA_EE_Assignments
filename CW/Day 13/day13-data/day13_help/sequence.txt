@@ -1,0 +1,101 @@
+Spring Data JPA Links (Bookmark them!)
+1. API Docs : https://docs.spring.io/spring-data/jpa/docs/2.7.18/api/
+2. Ref docs : https://docs.spring.io/spring-data/jpa/docs/2.7.18/reference/html/
+Latest Spring java docs
+Link : https://docs.spring.io/spring-framework/docs/5.3.26/javadoc-api/
+
+
+
+Today's Topics
+Revise - 
+RESTful web service 
+Full stack app overview
+Complete CRUD (along with ResponseEntity)
+
+Solve - Get Category details for specified id.
+i/p - catgeory id
+o/p - success - SC 200 + category details
+error - SC 404 , err mesg (DTO -- ApiResponse - error mesg)
+
+
+
+
+
+
+Spring Boot Testing
+Refer - "Regarding ResponseEntity.txt"
+
+Annotations
+How does SC perform marshalling / un marshalling ?
+Refer - HttpMessageConverter from "RestController vs MVC Controller n Annotations.txt"
+
+Content negotiation
+Refer - "day13_help\Content Negotiation.txt"
+Add a header , in postman request 
+Accept with value=application/xml 
+Observe n conclude .
+
+
+
+New Topics
+1. Using swagger 
+Refer - "day13-data\day13_help\Regarding Swagger.txt"
+Test the application with swagger as a REST client.
+
+Enter Advanced REST
+
+2 E-R with REST API
+Un comment the association from Category class.
+Generate suitable constructor
+Exclude association fields from toString , to avoid recursion n thus leading to stack overflow
+
+2.1 Run the end point - get all categories  
+
+Observation - Exception
+Details - org.springframework.http.converter.HttpMessageNotWritableException: Could not write JSON: failed to lazily initialize a collection of role: com.blogs.entities.Category.posts, could not initialize proxy - no Session
+
+
+
+
+
+Cause -Category 1->* Post
+Default fetch type : LAZY  (i.e post details are NOT lifted from DB -- represented by a proxy) --can't be access outside the session scope. 
+
+Soln -- change LAZY --> EAGER
+
+2.2 Eager fetching ?
+Observation - stack overflow to due recursion
+root cause - bi dir association
+(during ser Jackson from category --tries to ser posts n from post tries to ser. Category)
+(For understanding the problem - run postman client)
+
+2.3 Use @JsonIgnore (jackson annotation) to tell Jackson(vendor for ser n de-ser) to skip a field during ser n de-ser.
+Not an effective solution
+Reason - If REST clnt needs to fetch category + post details - it won't be possible, since @JsonIgnore is used !!!
+
+
+2.4 Clean n recommended solution -
+DO NOT expose entities for data exchange between REST clnt n REST server , use them only for persistence.
+
+Instead use DTO(Data transfer obj) pattern to exchange data between client n server.
+1 Entity --> DTO (is required during ser.)
+Create DTO instance , read data from entity(getter) --> set the data in DTO (setter)
+
+DTO --> Entity (is required during de-ser.)
+Create entity instance , read data from dto(getter) --> set the data in entity (setter)
+
+2. Instead of doing it ourselves --there are ready made 3rd party libs -
+meant for src obj --> dest obj conversion.
+
+eg : ModelMapper, MapStruct
+Refer - "day13_help\Advanced REST\readmes\Regarding ModelMapper.txt"
+
+Objective - Create CategoryDTO , with required fields.
+Control property access (@JsonProperty) , if required.
+
+Modify service layer , to return List of Category entity or DTO ?
+
+2.1 Replace actual Resource(eg : Employee / Customer / User / Category )  by ResponseEntity
+Refer - "Regarding ResponseEntity.txt"
+
+

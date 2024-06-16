@@ -1,0 +1,39 @@
+package tester;
+import static utils.HibernateUtils.getFactory;
+
+import java.time.LocalDate;
+import java.util.Scanner;
+
+import static utils.HibernateUtils.*;
+
+import org.hibernate.SessionFactory;
+
+import dao.UserDaoImpl;
+import pojos.*;
+
+public class RegisterUser {
+
+	public static void main(String[] args) {
+	  
+		try(SessionFactory sf = getFactory(); Scanner sc= new Scanner(System.in))
+		{
+			 System.out.println("Enter user details -  firstName,  lastName," + "  "
+						+ "email,  password,  dob,  phoneNo, role reg amount");
+			   
+			 //String firstName, String lastName, String email, String password, Role userRole, String confirmPassword,
+				//String phone, double regAmount, LocalDate regDate
+			 User newUser = new User(sc.next(), sc.next(), sc.next(), sc.next(),Role.valueOf(sc.next()),sc.next(), sc.next(),
+						 sc.nextDouble(),LocalDate.parse(sc.next()));
+		UserDaoImpl dao = new UserDaoImpl();
+		System.out.println(dao.registerUser(newUser));
+		
+		}
+		catch(Exception e)
+		{
+			e.printStackTrace();
+		}
+        
+	}
+
+
+}

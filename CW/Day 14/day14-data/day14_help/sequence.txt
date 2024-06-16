@@ -1,0 +1,494 @@
+Today's  Topics
+Continuation with E-R (Resource , sub resource and their realtionships)
+JPA/Hibernate value types
+get vs load
+Spring validations n global exception handling
+Image Handling 
+Pagination
+Spring Boot AOP
+Spring Security
+Spring boot internal working
+JPA/Hibernate inheritance
+.......
+
+----------------------
+0. Revise 
+Need of separation between DTOs n entities 
+How to do the mapping automatically ?
+Refer - "day13_help\Advanced REST\readmes\Regarding ModelMapper.txt"
+
+1. Test  the end point - get all categories (from day13_REST2) 
+
+1.1 Observation - Exception
+Details - org.springframework.http.converter.HttpMessageNotWritableException: Could not write JSON: failed to lazily initialize a collection of role: com.blogs.entities.Category.posts, could not initialize proxy - no Session
+Cause -Category 1->* Post
+Default fetch type : LAZY  (i.e post details are NOT lifted from DB -- represented by a proxy) --can't be access outside the session scope. 
+
+Soln -- change LAZY --> EAGER
+
+1.2 Eager fetching ?
+Observation - stack overflow to due recursion
+root cause - bi dir association
+(during ser Jackson from category --tries to ser posts n from post tries to ser. Category)
+(For understanding the problem - run postman client)
+
+1.3 Use @JsonIgnore (jackson annotation) to tell Jackson(vendor for ser n de-ser) to skip a field during ser n de-ser.
+Not an effective solution
+Reason - If REST clnt needs to fetch category + post details - it won't be possible, since @JsonIgnore is used !!!
+
+
+1.4 Clean n recommended solution -
+DO NOT expose entities for data exchange between REST clnt n REST server , use them only for persistence.
+
+Instead use DTO(Data transfer obj) pattern to exchange data between client n server.
+1 Entity --> DTO (is required during ser.)
+Create DTO instance , read data from entity(getter) --> set the data in DTO (setter)
+
+DTO --> Entity (is required during de-ser.)
+Create entity instance , read data from dto(getter) --> set the data in entity (setter)
+
+1.5  Instead of doing it ourselves --there are ready made 3rd party libs -
+meant for src obj --> dest obj conversion.
+
+eg : ModelMapper, MapStruct
+Refer - "day13_help\Advanced REST\readmes\Regarding ModelMapper.txt"
+
+2. Objective - Add the end point to return Category with given id , along with Post details
+i/p - category id
+resp - Category + it's post details
+
+3. Add new end point
+For adding a new blog post.
+i/p - title , desc , contents , category id ,  author id 
+How will you design it ?
+Controller - BlogPostController
+URL - http://host:port/posts
+Payload - dto containing above details
+Resp - dto (currently - ApiResponse)
+Lab work - replace ApiResponse by BlogPostDetails
+
+
+
+4.  Update blog post contents
+i/p - post id n updated contents
+How will you design it ?
+
+4.5 Get all the posts under the specified category name
+i/p - category name
+o/p all blog post details (containing - title,contents, desc, category name , blogger first name n last name)
+BlogPostController 
+path var - categoryName
+controller -> service
+In service -
+@Query(JPQL ctor expression)
+blogPostRepo.findByChosenCategoryName(catName);
+
+5. 
+Post a comment to the blog post
+i/p - comment  , rating  , commenter id , post id
+
+
+6. Objective : User signin endpoint 
+URL : http://host:port/users/signin
+Method : POST (for adding email n pwd : in request body as additional security.)
+
+Request Body : DTO (eg : AuthRequestDTO)
+Resp : ResponseEntity
+Success : SC 200 + UserDTO
+Failure : SC 404 + ApiResp (err mesg +timestamp)
+
+7. In case of failure : Client SHOULD NOT see the error stack trace 
+INSTEAD
+REST server should return Resp packet with : SC 404 n resp body containing : DTO 
+with time stamp n err mesg (Hint : Use ApiResponse DTO)
+
+5. What will happen ?
+In User sign in
+in the JSON payload : send empty payload
+Observe n conclude 
+
+Any problem n any solution ?
+
+6. Enter :  REST Server side Validations
+(Refer to readme : templates.txt & "regarding spring boot exc handling n validations.txt") 
+
+
+1. How will you add server side P.L (presentation logic) validations + centralized exception handling ?
+Refer - "day14_help\Advanced REST\readmes\regarding spring boot exc handling n validations.txt" 
+
+Steps :
+1.1 Add dependency : spring boot validation stater
+(already added in pom.xml)
+
+1.2 To validate Request Body
+Since we are using DTOs for data exchange (eg - Appointment DTO , User DTO , Category DTO)
+Add these annotations on DTO fields.
+@NotBlank , @NotNull , @Pattern, @Min,@Max, @Range, @Length,@Future....
+
+1.3 @RequestBody + @Valid on the  request body : method arg of POST/PUT/PATCH
+In case of validation failure the exception raised - MethodArgumentNotValidException
+
+1.4 To validate  - path variables n request params 
+
+Add - 
+@Validated : class level annotation , on the RestController class
+@NotBlank , @NotNull , @Pattern, @Min,@Max, @Range, @Length....
+on request parameters  or path variables
+eg : End point -- get all posts for given category id
+In @Validated
+BlogPostController - @ReqMapping - "/categories"
+@GetMapping("/{categoryId}/posts")
+public ResponseEntity<?> getAllPostsByCategory(@PathVariable @NotNull Long categoryId)
+{
+ .....
+}
+Exception raised :  ConstraintViolationException
+
+1.5 Why do we need to add centralized(Global) custom exception handling ?
+
+In the absence of custom exc handler , Spring boot supplies a default  exception handler
+It  sends JSON error object with -  timestamp , error code , err mesg ,err stack trace to the clnt .
+Is this a correct practice ?
+NO !
+
+In case of  B.L failures (service layer exceptions) --
+You can add a try-catch block in the controller 
+BUT it will result into lot many try catch blocks ,  in Rest controller methods
+
+Such a try-catch block CAN NOT handle : validation failures 
+
+Soln : add custom (global) exception handler
+
+How will you add it ?
+Create a separate global exception handler class.
+1. Add class level anno
+@ControllerAdvice | @RestControllerAdvice
+=> Spring bean containing common exception handling advice .
+This exc handler class  is supplying a common advice to all Controllers | REST controllers 
+The advice being -  
+Do not add exc handling logic separately BUT add it ONLY in this class.
+
+2. Add exception handling methods(equivalent to the catch block) in this global exception handler class.
+Add method level annotation 
+eg : ResourceNotFoundException
+@ExceptionHandler(ResourceNotFoundException.class)
+public ResponseEntity<?> handleResourceNotFoundException(ResourceNotFoundException e)
+{
+ return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ApiResponse(e.getMessage()));
+}
+
+
+2. Spring Boot AOP
+refer -"day14_help\AOP\readme_aop.txt"
+code - spring_boot_aop
+
+
+8. Spring Security overview
+
+8.1 Understanding Spring Security architecture
+Refer : 
+"day14_helphelp\Spring Security\regarding spring security.txt"
+"Security flow summary.txt"
+Diagrams : 
+"day14_helphelp\Spring Security\diagrams\servletfilter-1.png"
+"servletfilter-1.png"
+"spring security architecture.jpeg"
+"detailed flow.png"
+"Authentication Manager's working-1.webp"
+"Auth Provider's working-2.webp"
+"Dao Auth Provider-3.webp"
+"The Final Authentication flow-4.webp"
+OR
+"Ultimate Details of Spring Security Architecture.png"
+
+Steps
+1. Create spring boot application , w/o adding spring security dependencies
+Try to access some end points (eg : view products , add / delete products ..)
+Observation : all end points were un protected !
+
+2. Add spring security starter dependency in pom.xml , update maven project
+Observations
+2.1  : All end points are automatically PROTECTED (SECURED)
+i.e entire web app is under a lock (authentication lock).
+Un authenticated user CAN NOT access any of the APIs.
+2.2 It supplies def user name : user
+generate 128 bit randomly generated password on server console 
+You can test it using a browser. It will give you a ready made signin n signout form
+
+Understand this : By default spring security offers : form login n also authentication mechanism = Basic Authentication.
+
+What is Basic Authentication scheme of HTTP?
+
+1. Any time clnt sends a req to protected resource --spring sec uses by default : basic auth
+Server sends resp header : WWW-Autheticate --- Basic 
+2. clnt has to send username:password --- base64 encoding
+auto sent by postman , using Basic Authentication scheme.
+3. Continue to in mem based authentication(InMemory User Details)
+
+Ref eclipse project :  spring_security1
+
+4. Replace it by DB based authentication (DB based  User Details , accessed using JPA)
+
+Add Dao test case to populate users.
+Add User Service for user signup
+Add UserController : for signup
+4.1 In security config class : 
+Remove In Mem Authentication User Details Manager
+Disable CSRF
+Permit all : "/users/signup", "/swagger-ui/**", "/v*/api-docs/**"
+Ref eclipse project : spring_security2
+
+5. Continue to JWT based authentication
+(Replace Basic Authentication scheme by JWT based authentication)
+
+JSON Web Tokens (JWT) have become a popular method (Industry standard) for securing modern web applications, especially  RESTful web services.
+
+ JWTs allow you to transmit information securely between parties as a compact, self-contained, and digitally signed JSON object.
+
+
+For the understanding of JWT n steps : 
+Refer : "day14_helphelp\spring security\JWT\JWT Details.txt"
+Refer : "day14_helphelp\spring security\JWT\JWT Steps Upgraded.txt"
+
+Ref eclipse project : spring_security3
+
+Steps overview
+1. Copy from the earlier project
+(User signup same as earlier)
+
+2. Add new end point in UserController , for signin
+
+request payload : 	Auth req DTO : email n password
+resp payload : In case of success : Auth Resp DTO : mesg + JWT token + SC 200
+IN case of failure : SC 401
+
+
+3. For JWT creation 
+3.1 Copy JWT properties (secret key n expiration time in msec) in application.properties file
+Generate secret key : https://generate-random.org/encryption-key-generator
+
+3.2 Copy JWT Utils class
+Contains Methods for : 
+Token generation
+Validation
+Extracting the claims : email (username : subject) n authorities
+You can add one more custom claim , for storing user id (if needed in your project)
+
+4. Test User sign in endpoint (on swagger /postman) to confirm token generation
+
+5. Any time client tries to access , any secured end point : 
+REST client has to add a Bearer Token in request Header : Authorization
+(Confirm with Postman : choose Auth : Bearer Token)
+
+To intercept any request , to check for the token :
+Add custom filter : JWT custom filter  (extending from OncePerRequestFilter)
+5.1 Check for authorization header 
+If it's not null n starting with Bearer : extract token
+5.2 Validate the token
+5.3 In case of successful validation 
+extract claims : username/email (subject of the token claims)
+n extract authorities
+5.4 Wrap user details (username/email +granted authorities ) in the :  UsernamePasswordAuthenticationToken (imple of Authentication)
+5.5 Save above Authentication object in the spring sec ctx holder
+
+5.6 Continue with filter chain : doFilter
+
+6. To change the session config policy to stateless n add custom filter before : UsernamePasswordAuthenticationFilter 
+copy from ready made sec config  class 
+
+7. Test accessing secure end points
+
+
+How will you test from postman ?
+1. URL : http://localhost:8080/products/view
+NO authentication required , you should get SC 200 , since it's permit all.
+2. URL : http://localhost:8080/products/purchase
+SC 401 , Authentication required n customer role is mandatory.
+3. First authenticate (In the project , refer to : UserAuthController)
+URL : http://localhost:8080/users/signin , method = POST , Body --raw --json 
+{
+"email" : "a2@gmail.com",
+"password" : "2345"
+}
+These are the correct credentials for the customer role.
+
+In the response , SC 200 n in the resp body , you will get this
+{
+    "jwt": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE3OTI4MzgsImV4cCI6MTcwMTg3OTIzOCwiYXV0aG9yaXRpZXMiOiJST0xFX0NVU1RPTUVSIn0.3XzhKJ0WPkra5b4-BkOfA7rbXWHSgzOcO_MDDJOdyplESTGcG6FMCfXwzvs6Qa5ao7PUQ8dCxQazbHUQzeKxhQ",
+    "mesg": "User authentication success!!!"
+}
+The value of JWT may differ.
+
+
+4. Now for accessing the secured end point , 
+URL : URL : http://localhost:8080/products/purchase , method=GET
+Instead of choosing "Basic Auth" , choose "Bearer Token" , from Auth 
+n paste the JWT(Json web token)
+You should get : SC 200 
+Resp body : customer should be able to purchase products
+
+5. Similarly , you can test other endpoints.
+
+
+3. Enter Spring Security
+Refer - "day14_help\spring security\regarding spring security.txt"
+"day14_help\spring security\Security flow summary.txt"
+
+Steps
+1. Create spring boot application , w/o adding spring security dependencies
+Try to access some end points (eg : view products , add / delete products ..)
+Observation : all end points were un protected !
+
+2. Add spring security starter dependency in pom.xml , update maven project
+Observations
+2.1  : All end points are automatically PROTECTED (SECURED)
+i.e entire web app is under a lock (authentication lock).
+Un authenticated user CAN NOT access any of the APIs.
+2.2 It supplies def user name : user
+generate 128 bit randomly generated password on server console 
+You can test it using a browser. It will give you a ready made signin n signout form
+Understand this : By def spring security offers : form login n also authentication mechanism = Basic Authentication.
+
+What is Basic Authentication scheme of HTTP?
+
+1. Any time clnt sends a req to protected resource --spring sec uses by default : basic auth
+Server sends resp header : WWW-Autheticate --- Basic 
+2. clnt has to send username:password --- base64 encoding
+auto sent by postman , using Basic Authentication scheme.
+3. Continue to in mem based authentication(InMemory User Details)
+Ref eclipse project : 
+
+4. Replace it by DB based authentication (DB based  User Details , accessed using JPA)
+Ref eclipse project : 
+
+5. Continue to JWT based authentication
+(Replace Basic Authentication scheme by JWT based authentication)
+For the understanding of JWT n steps , 
+Refer : "day14_help\spring security\JWT\JWT Details.txt"
+Refer : "day14_help\spring security\JWT\JWT Steps Upgraded.txt"
+Ref eclipse project : 
+Edit DB properties .
+Run the test class : src\test\java\com\app\repository\UserEntityRepositoryTest.java
+It will create 3 different users  with 3 different type of roles.
+
+1.6 What is pagination ?
+Dividing larger no of results (eg : products , users, reviews , blogs ...) into fixed size pages/slices.
+
+How will you add it's support ?
+
+Steps 
+ The Dao i/fs extends from JpaRepository ----> PagingAndSortingRepository -->CrudRepository --> Repository
+
+PagingAndSortingRepository Methods
+package : o.s.data.repository
+1. 
+Page<T> findAll(Pageable pageable)
+Returns a Page of entities meeting the paging restriction provided in the Pageable object.
+
+i/p : Pageable : i/f for pagination
+Implementation class : PageRequest
+
+2. Method of PageRequest class 
+public static PageRequest of(int pageNumber,int pageSize)
+Creates a new unsorted PageRequest.
+Parameters:
+pageNumber - zero-based page number
+pageSize - the size of the page to be returned(>0)
+
+3. Page<T> : i/f 
+It's inherited method for Slice<T>
+List<T> getContent()
+Returns the page content as List.
+T : type of the entity
+
+
+2. Spring boot internals 
+refer : readme
+
+
+
+5. 
+Logging framework in Java
+Refer : "day17_help\Regarding logging framework in Java.txt"
+Spring Boot AOP 
+
+Objective  If you want to intercept all the requests sent to this application n maintain a server side log , how will you do it ?
+
+Refer : "day17_help\AOP\readme_aop.txt"
+
+
+
+6. Inheritance in JPA / Hibernate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3. Microservices demo (Using RestTemplate)
+Refer : 
+"day17_help\Spring boot microservices\regarding microservices demo.txt"
+
+
+
+
+How will you test from postman ?
+1. URL : http://localhost:8080/products/view
+NO authentication required , you should get SC 200 , since it's permit all.
+2. URL : http://localhost:8080/products/purchase
+SC 401 , Authentication required n customer role is mandatory.
+3. First authenticate (In the project , refer to : UserAuthController)
+URL : http://localhost:8080/users/signin , method = POST , Body --raw --json 
+{
+"email" : "a2@gmail.com",
+"password" : "2345"
+}
+These are the correct credentials for the customer role.
+
+In the response , SC 200 n in the resp body , you will get this
+{
+    "jwt": "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhMkBnbWFpbC5jb20iLCJpYXQiOjE3MDE3OTI4MzgsImV4cCI6MTcwMTg3OTIzOCwiYXV0aG9yaXRpZXMiOiJST0xFX0NVU1RPTUVSIn0.3XzhKJ0WPkra5b4-BkOfA7rbXWHSgzOcO_MDDJOdyplESTGcG6FMCfXwzvs6Qa5ao7PUQ8dCxQazbHUQzeKxhQ",
+    "mesg": "User authentication success!!!"
+}
+The value of JWT may differ.
+
+
+4. Now for accessing the secured end point , 
+URL : URL : http://localhost:8080/products/purchase , method=GET
+Instead of choosing "Basic Auth" , choose "Bearer Token" , from Auth 
+n paste the JWT(Json web token)
+You should get : SC 200 
+Resp body : customer should be able to purchase products
+
+5. Similarly , you can test other endpoints.
+
+Refer - 
+javatechie : you tube channel
+spring boot interview question
+also for spring security
+
+For comments with update time > give time 
+http://localhost:8080/comments/update_time/2024-06-14T22%3A50%3A10
+2024-06-14T22:50:10
+
+
+Eclipse projects
+day13_REST2
+blogs_api
+spring_boot_aop
+spring security project
+EMS backend
+JPA inheritance projects
+
+
+

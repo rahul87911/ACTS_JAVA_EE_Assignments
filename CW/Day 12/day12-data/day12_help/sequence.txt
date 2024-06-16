@@ -1,0 +1,27 @@
+Today's Topics
+
+1. What is Spring Boot n why ?
+
+2. Enter Spring Data JPA
+
+3. Revise Spring Boot MVC (using complete code walk through) n understand solution 
+Refer - request n response flow
+
+4. Continue with remaining part of the assignment
+
+5. Enter REST (CRUD operations) 
+
+6. Lombok annotations
+
+---------------------------------
+1. Login with Blogger role
+-> blogger home page.
+Now refresh the page couple of times -it will fire select query every time even after forwarding to home page.
+Remember multiple submit issue ??
+Solution ????
+
+
+2. Solve above problems n continue with the assignment
+
+3. Enter REST
+"day12_help\REST\Spring Boot REST Steps.txt"

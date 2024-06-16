@@ -1,0 +1,78 @@
+package dao;
+
+import pojos.User;
+import static utils.HibernateUtils.getFactory;
+
+import java.io.Serializable;
+
+import org.hibernate.*;
+
+public class UserDaoImpl implements IUserDao {
+
+	@Override
+	public String registerUser(User user) {
+		String msg="User reg failed";
+		Session session=getFactory().openSession();
+		
+ 		Transaction tx=session.beginTransaction();
+		try {
+		     Serializable userId =session.save(user);
+			
+			tx.commit();
+			msg="user registered successfull with ID="+userId; 
+		}catch(RuntimeException e)
+		{
+		 if(tx!=null)
+			 tx.rollback();
+		 throw e;
+		}
+		finally {
+		 if(session != null)
+			 session.close();
+		}
+		return msg;
+	}
+
+	@Override
+	public String registerUserWIthGetCurrentSession(User user) {
+		String msg="User reg failed";
+		Session session=getFactory().getCurrentSession();
+		
+ 		Transaction tx=session.beginTransaction();
+		try {
+		     Serializable userId =session.save(user);
+			
+			tx.commit();
+			msg="user registered successfull with ID="+userId; 
+		}catch(RuntimeException e)
+		{
+		 if(tx!=null)
+			 tx.rollback();
+		 throw e;
+		}
+		
+		return msg;
+	}
+
+	@Override
+	public User getUserDetails(int userId) {
+		Session session=getFactory().getCurrentSession();
+		User user=null;
+		Transaction tx = session.beginTransaction();
+		
+		try {
+			 
+			
+			tx.commit();
+		}
+		catch (RuntimeException e) {
+			if(tx != null)
+			{
+				tx.rollback();
+				throw e;
+			}
+			return user;
+		}
+	}
+
+}

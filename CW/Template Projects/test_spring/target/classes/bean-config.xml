@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<!--dependency bean config   -->
+<bean id="maths" class="dependency.MathsTeacher"/>
+<bean id="eng" class="dependency.EnglishTeacher" lazy-init="true"/>
+
+<bean id="sci" class="dependency.ScienceTeacher" scope="prototype"/>
+
+
+<bean id="cric" class="dependency.CricketCoach"/>
+<bean id="swim" class="dependency.SwimmingCoach" lazy-init="true"/>
+
+<bean id="football" class="dependency.FootballCoach" scope="prototype"/>
+
+
+
+
+<bean id="my_school" class="dependent.PublicSchool" >
+<constructor-arg name="teacher" ref="english"/>
+<property name="sportsCoach" ref="cricket"/>
+</bean>
+</beans>

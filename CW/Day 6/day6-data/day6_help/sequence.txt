@@ -1,0 +1,226 @@
+Today's   topics
+Revise JSP Directives
+Start with -
+JSP Actions
+JSP-JavaBean
+JSTL
+Enter Hibernate
+
+
+
+
+1. JSP Actions 
+1.1  Request dispatcher related
+
+1.2 JSP - JavaBean related actions
+
+Objective : User login in online voting
+
+We have already solved it using servlets . Right ?
+So why - JSP  Using Java Beans ?
+For separation of concerns(=tasks/responsibilities)
+We are going to separate :
+1.  P.L (presentation logic) , navigation in a JSP 
+(w/o using java code)
+
+2. B.L (Business logic) : separated in a java class : java bean 
+
+
+Enter 
+1. What is a java bean ?
+Java class containing B.L (equivalent to service layer in spring| Model of MVC)
+It's attribute (=server side entry , key=string , value=object) created by WC as a result of <jsp:useBean>, can be added under page|request|session|application
+
+
+2. Why Java Beans ?
+2.1 Separation between P.L n B.L
+2.2 Reusable components
+2.3 To perform auto translation from string based req parameters -> primitive types (properties in Java Bean)
+
+
+
+case study : Voting case study  (admin role)
+
+
+Layers to be copied from earlier (servlet based) assgnment
+No change in : Tables, POJOs, DAOs , DBUtils
+ 
+Layers -- JSP --JavaBean -DAO (uses DBUtils) - Entities --DB
+Steps
+
+3. JSP standard Actions Using java beans 
+3.1
+<jsp:useBean id="bean id" class="Fully qualified bean class" scope="page|request|session|application"/>
+Mandatory attributes : id n class
+Def value of scope=page
+
+eg: <jsp:useBean id="user" class="com.app.beans.UserBean" scope="session"/>
+Internals (What will WC invoke?)
+session.getAttribute("user") 
+null => bean not found
+WC creates the same - session.setAttribute("user",new UserBean());
+not null -- simply returns(WC does nothing!)
+
+
+2. For Data binding(data transfer)  from view layer(JSP)---> model (java bean)
+i.e calling the setters of Javabean properties.
+<jsp:setProperty name="bean id" property="*"/>
+eg : <jsp:setProperty name="user" property="*"/>
+
+WC tries to invoke ALL MATCHING setters , on java bean instance
+(i.e for complete data xfer : MATCH req param names with JavaBean property setters)
+
+2.5 Use 
+<jsp:getProperty name="bean id" property="propName"/>
+to invoke property getter from JB class .
+
+3. Invoke B.L method of the Javabean , using EL syntax
+eg : In UserBean class  , suppose B.L method exists
+public String authenticateUser() {....}
+How to invoke this method from JSP (w/o scriptlet)
+
+${sessionScope.user.authenticateUser()}
+WC - sessionScope.get("user").authenticateUser()
+
+
+4. Navigate clnt to the next page in the SAME request(server pull : forward)
+eg : 
+5. How to invoke getters of JB ?
+5.1 <jsp:getProperty name="voter" property="validatedUser"/>
+
+
+OR 
+EL syntax : 
+
+WC : 
+
+
+6. Any problems observed with server pull(RD's forward scenario)  
+Multiple submission issue
+Why ? Client is navigated to the next page , in the SAME request 
+Can result into increased DB traffic or even worse --dup records 
+eg dup orders.
+
+What's the solution ? Double/multiple submit guard
+Design Pattern : PRG (Post--Redirect--Get)
+
+Replace server pull by client pull 
+(i.e replace RD's forward by resp.sendRedirect)
+BUT there is no JSP standard action for redirection , 
+so enter JSTL .
+
+7. Enter JSTL(JSP standard Tag Library)
+What is it ? 
+A part of Java EE specification
+Why 
+To avoid usage of scriptlets (java code) in JSP
+
+JSTL supports 5 different tag libraries 
+- core , sql , xml , fmt, function
+
+Import JSTL core tag lib n use tag.
+Steps
+1. Copy/confirm jstl1.2.jar under <tomcat> / lib
+(Already done in the supplied server)
+
+2. Import JSTL supplied core tag lib , using taglib directive
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+
+3. Use JSTL tags(=actions)
+<c:redirect url="next page URL/redirect location"/>
+Performs redirect + URL encoding
+
+
+3. Use the tag
+eg : In one.jsp : 
+<c:redirect url="two.jsp"/>
+WC : response.sendRedirect(response.encodeRedirectURL("two.jsp"));
+
+If cookies are enabled ,WC sends location  : two.jsp
+OR
+If cookies are disabled , WC sends resp :   two.jsp;jsessionid=tgret45645654hfdhgf
+
+
+Other JSTL Tags
+
+1. For setting the attribute -
+<c:set var="abc" value="${param.name}" scope="session"/>
+WC : session.setAttribute("abc",request.getParameter("name"));
+
+2. For removing the attribute -
+<c:remove var="abc"  scope="session"/>
+WC : session.removeAttribute("abc") (equivalent to Map's remove)
+
+3. <c:set var="abc" value="${param.name}"/>
+WC : pageContext.setAttribute("abc",request.getParameter("name"));
+
+4.  For conditional testing - : <c:if>
+<c:if test="boolean value">
+Executed in case of true
+</c:if>
+
+eg : In HTML form 
+<input type="submit" name="btn" value="Withdraw">
+<input type="submit" name="btn" value="Deposit">
+In transactions.jsp
+<c:if test="${param.btn eq 'Withdraw'}">
+ In withdraw 
+</c:if>
+WC : 
+if(request.getParameter("btn").equals("Withdraw")
+ out.print("in withdraw")
+Use case : voter login --success -not yet voted --list.jsp ---status.jsp
+voter login --success -alrdy  voted ----status.jsp
+
+status.jsp : after casting a vote => increment votes n change voting status
+directly : u have alrdy voted => no action --display a message
+eg : 
+<c:if test="${sessionScope.voter.status}">
+ You have alrdy voted....
+</c:if>
+
+
+5. For switch - case 
+syntax -
+<c:choose>
+ <c:when test="boolean value">
+ ....
+ </c:when>
+  .....
+ <c:otherwise>
+ ...
+ </c:otherwise>
+</c:choose>
+eg - 
+<c:choose>
+ <c:when test="${param.btn eq 'Withdraw'}">
+ In withdraw 
+ </c:when>
+ <c:when test="${param.btn eq 'Deposit'}">
+In Deposit
+ </c:when>
+ <c:otherwise>
+ some other btn ......
+ </c:otherwise>
+</c:choose>
+
+URL :  
+http://host:port/one.jsp?name="Ranjana"
+
+In one.jsp
+<c:set var="abc" value="${param.name}" scope="session"/> 
+<c:redirect url="two.jsp"/>
+WC : response.sendRedirect(response.encodeRedirectURL("two.jsp"));
+
+In two.jsp
+${sessionScope.abc} : Ranjana  ---Even if cookies are enabled/disabled
+
+eg : 
+<c:redirect url="${sessionScope.user.validateUser()}.jsp"/>
+
+6. Iteration tag
+<c:forEach var="loop local attribute" items="Iterable src">
+  Body of the loop
+</c:forEach>
+
+
